@@ -6,8 +6,8 @@ nav:
     - Home: index.md
     - Installation: installation.md
     - API Reference:
-        - Main: main.md
-        - PV Table: pv_table.md
+        - Archive Viewer: archive_viewer.md
+        - Traces Table: traces_table.md
 theme:
   icon:
     repo: fontawesome/brands/github

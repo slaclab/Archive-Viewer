@@ -1,19 +1,11 @@
-from qtpy.QtCore import QAbstractTableModel, QMimeData, QModelIndex, QObject, Qt, QUrl, QVariant
-from qtpy.QtGui import QDrag
-from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
-from qtpy.QtWidgets import (
-    QAbstractItemView,
-    QHBoxLayout,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QTableView,
-    QVBoxLayout,
-    QWidget,
-)
-from typing import List, Optional
 import logging
+from typing import (List, Optional)
+from qtpy.QtGui import QDrag
+from qtpy.QtCore import (QAbstractTableModel, QMimeData, QModelIndex, QObject,
+                         Qt, QUrl, QVariant)
+from qtpy.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+from qtpy.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
+                            QLineEdit, QPushButton, QTableView, QVBoxLayout, QWidget)
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +100,7 @@ class ArchiveSearchWidget(QWidget):
     """
 
     def __init__(self, parent: Optional[QObject] = None):
-        super().__init__(parent=parent)
+        super(QWidget, self).__init__(parent=parent)
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.populate_results_list)
