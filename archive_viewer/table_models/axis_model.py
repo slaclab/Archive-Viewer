@@ -1,6 +1,6 @@
-from typing import Any
+from typing import (Any, List, Dict)
 from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex)
-from pydm.widgets.baseplot import BasePlot, BasePlotAxisItem
+from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
 from pydm.widgets.axis_table_model import BasePlotAxesModel
 
 
@@ -92,6 +92,34 @@ class ArchiverAxisModel(BasePlotAxesModel):
         new_axis = self.get_axis(-1)
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
+
+    def set_model_axes(self, axes: List[Dict]) -> None:
+        key_translate = {"minRange": "min_range",
+                         "maxRange": "max_range",
+                         "autoRange": "enable_auto_range",
+                         "logMode": "log_mode"}
+        cleaned_axes = []
+        for a in axes:
+            clean_a = {}
+            for k, v in a.items():
+                if v is None:
+                    continue
+                elif k in key_translate:
+                    new_k = key_translate[k]
+                    clean_a[new_k] = a[k]
+                else:
+                    clean_a[k] = a[k]
+            cleaned_axes.append(clean_a)
+
+        self.beginResetModel()
+        self._plot.clearAxes()
+
+        for a in cleaned_axes:
+            self._plot.addAxis(None, **a)
+
+        for row, axis in enumerate(self._plot._axes):
+            self.attach_range_changed(row, axis)
+        self.endResetModel()
 
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the axis at the given table index.

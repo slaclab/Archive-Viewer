@@ -1,4 +1,5 @@
 {
+    "save_file_dir": "$PHYSICS_DATA/ArchiveViewer/",
     "archivers": {
         "LCLS": "http://lcls-archapp.slac.stanford.edu"
     },
