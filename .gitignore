@@ -1,3 +1,8 @@
+# Config & Save files
+*.txt
+*.xml
+*.pyav
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

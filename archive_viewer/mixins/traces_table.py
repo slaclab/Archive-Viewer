@@ -1,4 +1,5 @@
 from typing import (Dict, Any)
+from qtpy import sip
 from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
                             QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
@@ -123,8 +124,12 @@ class TracesTableMixin:
         axis_name : str
             The name of the new axis the curve should be on
         """
+        if not axis_name:
+            return
+        # Get the curve and check if it has been deleted
         curve = self.curves_model.curve_at_index(row)
-        self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
+        if not sip.isdeleted(curve):
+            self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
 
 
 class PVContextMenu(QMenu):
