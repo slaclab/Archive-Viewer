@@ -1,8 +1,8 @@
 from os import getenv
-from functools import partial
+from logging import (Handler, LogRecord)
 from subprocess import run
 from qtpy.QtCore import Slot
-from qtpy.QtWidgets import (QAbstractButton, QApplication)
+from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
 from pydm import Display
 from config import logger
 from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
@@ -74,3 +74,15 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                       shell=True,
                       capture_output=True)
         return git_cmd.stdout.strip()
+
+
+class LoggingHandler(Handler):
+    def __init__(self, logging_lbl: QLabel, level: int=0) -> None:
+        super().__init__(level)
+        self.logging_lbl = logging_lbl
+
+    def emit(self, record: LogRecord):
+        log = record.msg
+        if record.levelno > 20:
+            log = f"[{record.levelname}] - {log}"
+        self.logging_lbl.setText(log)
