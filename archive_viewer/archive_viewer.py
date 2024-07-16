@@ -1,3 +1,4 @@
+from os import getenv
 from functools import partial
 from subprocess import run
 from qtpy.QtCore import Slot
@@ -19,6 +20,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         self.ui.main_spltr.setStretchFactor(0, 1)
 
         self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
 
         self.axis_table_init()
         self.traces_table_init()
