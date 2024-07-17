@@ -4,6 +4,7 @@ from qtpy.QtCore import (QObject, QModelIndex, Qt)
 from pydm.widgets.baseplot import BasePlot
 from pydm.widgets.archiver_time_plot import ArchivePlotCurveItem
 from pydm.widgets.archiver_time_plot_editor import PyDMArchiverTimePlotCurvesModel
+from config import logger
 from widgets import ColorButton
 from table_models import ArchiverAxisModel
 
@@ -60,13 +61,16 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         bool
             If the data was successfully set.
         """
+        logger.debug(f"Setting {column_name} data for curve {curve.address}")
         ret_code = False
         if column_name == "Channel":
             if value == curve.address:
                 return True
 
+            logger.debug(f"Disconnecting old channel(s): {curve.address}")
             [ch.disconnect() for ch in curve.channels() if ch]
             curve.address = str(value)
+            logger.debug(f"Connecting new channel(s): {curve.address}")
             [ch.connect() for ch in curve.channels() if ch]
 
             if not curve.name():
@@ -82,6 +86,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
 
+        logger.debug("Finished setting curve data")
         return ret_code
 
     def append(self, address: Optional[str] = None, name: Optional[str] = None, color: Optional[QColor] = None) -> None:
@@ -93,9 +98,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The PV address that the curve should gather data from.
         name : str, optional
             The display name for the curve.
-        color : Optional[QColor], optional
+        color : QColor, optional
             The curve's color on the plot.
         """
+        logger.debug("Adding new empty curve to plot")
         if self.rowCount() != 1:
             self._axis_model.append()
         y_axis = self._axis_model.get_axis(-1)
@@ -106,13 +112,23 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self.beginInsertRows(QModelIndex(), len(self._plot._curves), len(self._plot._curves))
         self._plot.addYChannel(y_channel=address, name=name, color=color, useArchiveData=True, yAxisName=y_axis.name)
         self.endInsertRows()
+        logger.debug("Finished adding new empty curve to plot")
 
     def set_model_curves(self, curves: List[Dict]) -> None:
+        """Reset model curves to given list of curve properties.
+
+        Parameters
+        ----------
+        curves : List[Dict]
+            List of curve properties.
+        """
+        logger.debug("Clearing curves model.")
         self.beginResetModel()
         self._plot.clearCurves()
         self._row_names = []
 
         for c in curves:
+            logger.debug(f"Adding curve: {c['channel']}")
             for k, v in c.items():
                 if v is None:
                     del c[k]
@@ -121,8 +137,8 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             self._plot.addYChannel(**c)
             self._row_names.append(self.next_header())
         self.append()
-
         self.endResetModel()
+        logger.debug("Finished setting curves model")
 
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the curve at the given table index.
@@ -132,6 +148,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
+        logger.debug(f"Removing curve at index {index.row()}")
         if not index.isValid() or index.row() == (self.rowCount() - 1):
             return False
         del self._row_names[index.row()]
@@ -139,9 +156,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
         if not self._plot._curves:
             self.append()
+        logger.debug(f"Finished removing curve previously at index {index.row()}")
         return ret
 
     def headerData(self, section, orientation, role=Qt.DisplayRole) -> Any:
+        """Return row header for given index"""
         if role == Qt.DisplayRole and orientation == Qt.Vertical and section < self.rowCount():
             return self._row_names[section]
         return super().headerData(section, orientation, role)

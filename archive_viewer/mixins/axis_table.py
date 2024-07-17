@@ -3,6 +3,7 @@ from datetime import datetime
 from qtpy.QtCore import Slot, QDateTime
 from qtpy.QtWidgets import QHeaderView
 from pyqtgraph import ViewBox
+from config import logger
 from table_models import ArchiverAxisModel
 from widgets import ComboBoxDelegate, ScientificNotationDelegate, DeleteRowDelegate
 
@@ -74,6 +75,7 @@ class AxisTableMixin:
                 proc_range[ind] = self.ui.archiver_plot.getXAxis().range[ind]
         proc_range.sort()
 
+        logger.debug(f"Setting plot's X-Axis range to {proc_range}")
         self.ui.archiver_plot.plotItem.vb.blockSignals(True)
         self.ui.archiver_plot.plotItem.setXRange(*proc_range)
         self.ui.archiver_plot.plotItem.vb.blockSignals(False)

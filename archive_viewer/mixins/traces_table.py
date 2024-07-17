@@ -110,6 +110,7 @@ class TracesTableMixin:
         logger.debug(f"ColorButton column selected: {is_color}")
 
         if index.isValid() and not is_color:
+            logger.debug(f"Opening context menu at index {index}")
             self.menu.selected_index = index
             self.menu.popup(table.viewport().mapToGlobal(pos))
 
