@@ -1,5 +1,6 @@
 {
     "save_file_dir": "$PHYSICS_DATA/ArchiveViewer/",
+    "datetime_pv": "SIOC:SYS0:AL00:TOD",
     "archivers": {
         "LCLS": "http://lcls-archapp.slac.stanford.edu"
     },

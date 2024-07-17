@@ -4,7 +4,7 @@ from subprocess import run
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (QAbstractButton, QApplication, QLabel)
 from pydm import Display
-from config import logger
+from config import (logger, datetime_pv)
 from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
 from styles import CenterCheckStyle
 
@@ -42,6 +42,8 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def populate_footer(self):
         self.ui.ftr_ver_lbl.setText(self.git_version())
         self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
+        self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
+        self.ui.ftr_ver_lbl.setText(self.git_version())
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
