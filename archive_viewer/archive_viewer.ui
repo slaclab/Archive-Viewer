@@ -25,6 +25,20 @@
    <item>
     <layout class="QHBoxLayout" name="scale_ctrl_lyt">
      <item>
+      <widget class="QPushButton" name="test_export_btn">
+       <property name="text">
+        <string>Test Export</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="test_import_btn">
+       <property name="text">
+        <string>Test Import</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="scale_ctrl_spcr">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -39,6 +53,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="half_min_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>30s</string>
        </property>
@@ -52,6 +72,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="min_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1m</string>
        </property>
@@ -65,10 +91,19 @@
      </item>
      <item>
       <widget class="QPushButton" name="hour_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1h</string>
        </property>
        <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
         <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
@@ -78,6 +113,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="week_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1w</string>
        </property>
@@ -91,6 +132,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="month_scale_btn">
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>1M</string>
        </property>
@@ -105,30 +152,17 @@
      <item>
       <widget class="QPushButton" name="cursor_scale_btn">
        <property name="text">
-        <string>Cursor</string>
+        <string>Mouse-Ctrl</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">timespan_btns</string>
        </attribute>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="live_scale_btn">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Live</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
       </widget>
      </item>
     </layout>
@@ -306,9 +340,237 @@
      </widget>
     </widget>
    </item>
+   <item>
+    <layout class="QVBoxLayout" name="ftr_logging_lyt">
+     <item>
+      <widget class="QLabel" name="ftr_logging_lbl">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignHCenter|Qt::AlignTop</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="ftr_lyt">
+       <item>
+        <widget class="QLabel" name="ftr_ver_lbl">
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Trace Version</string>
+         </property>
+         <property name="text">
+          <string>&lt;version_tag&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_sep_1_lbl">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>|</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_node_lbl">
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>nodename</string>
+         </property>
+         <property name="text">
+          <string>&lt;nodename&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_sep_2_lbl">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>|</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_user_lbl">
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>user</string>
+         </property>
+         <property name="text">
+          <string>&lt;user&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_sep_3_lbl">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>|</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_pid_lbl">
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>PID</string>
+         </property>
+         <property name="text">
+          <string>&lt;PID&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_sep_4_lbl">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>|</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ftr_url_lbl">
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Archiver URL</string>
+         </property>
+         <property name="text">
+          <string>&lt;PYDM_ARCHIVER_URL&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="ftr_spcr">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="PyDMLabel" name="ftr_time_lbl">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="precision" stdset="0">
+          <number>0</number>
+         </property>
+         <property name="showUnits" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="precisionFromPV" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="alarmSensitiveContent" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="alarmSensitiveBorder" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="PyDMToolTip" stdset="0">
+          <string>Current Datetime</string>
+         </property>
+         <property name="channel" stdset="0">
+          <string/>
+         </property>
+         <property name="enableRichText" stdset="0">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>PyDMLabel</class>
+   <extends>QLabel</extends>
+   <header>pydm.widgets.label</header>
+  </customwidget>
   <customwidget>
    <class>PyDMTimePlot</class>
    <extends>QGraphicsView</extends>

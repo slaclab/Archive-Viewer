@@ -1,7 +1,8 @@
-from typing import Any
+from typing import (Any, List, Dict)
 from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex)
-from pydm.widgets.baseplot import BasePlot, BasePlotAxisItem
+from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
 from pydm.widgets.axis_table_model import BasePlotAxesModel
+from config import logger
 
 
 class ArchiverAxisModel(BasePlotAxesModel):
@@ -63,6 +64,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             The role used by the view to indicate if the model is being editted,
             by default Qt.EditRole
         """
+        logger.debug(f"Setting {self._column_names[index.column()]} on axis {index.siblingAtColumn(0).data()}")
         if not index.isValid():
             return QVariant()
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
@@ -80,6 +82,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
             The name for the new axis item. If none is passed in, the
             axis is named "New Axis <row_count>".
         """
+        logger.debug("Adding new empty axis to the plot")
         if not name:
             axis_count = self.rowCount() + 1
             name = f"New Axis {axis_count}"
@@ -93,6 +96,36 @@ class ArchiverAxisModel(BasePlotAxesModel):
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
 
+    def set_model_axes(self, axes: List[Dict]) -> None:
+        key_translate = {"minRange": "min_range",
+                         "maxRange": "max_range",
+                         "autoRange": "enable_auto_range",
+                         "logMode": "log_mode"}
+        cleaned_axes = []
+        for a in axes:
+            clean_a = {}
+            for k, v in a.items():
+                if v is None:
+                    continue
+                elif k in key_translate:
+                    new_k = key_translate[k]
+                    clean_a[new_k] = a[k]
+                else:
+                    clean_a[k] = a[k]
+            cleaned_axes.append(clean_a)
+
+        logger.debug("Clearing axes model")
+        self.beginResetModel()
+        self._plot.clearAxes()
+
+        for a in cleaned_axes:
+            self._plot.addAxis(None, **a)
+
+        for row, axis in enumerate(self._plot._axes):
+            self.attach_range_changed(row, axis)
+        self.endResetModel()
+        logger.debug("Finished setting axes model")
+
     def removeAtIndex(self, index: QModelIndex) -> None:
         """Removes the axis at the given table index.
 
@@ -101,6 +134,7 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
+        logger.debug(f"Removing axis at index {index.row()}")
         if self.rowCount() <= 1:
             self.append()
         super().removeAtIndex(index)
