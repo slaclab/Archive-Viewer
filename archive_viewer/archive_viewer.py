@@ -1,4 +1,4 @@
-from os import getenv
+import os
 from logging import (Handler, LogRecord)
 from subprocess import run
 from qtpy.QtCore import Slot
@@ -13,7 +13,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
-        self.populate_footer()
+        self.set_footer()
 
         app = QApplication.instance()
         app.setStyle(CenterCheckStyle())
@@ -41,14 +41,20 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         logger.debug("Display initialized")
 
-    def populate_footer(self):
+    def set_footer(self):
+        """Set footer information for application. Includes logging, nodename,
+        username, PID, git version, Archiver URL, and current datetime
+        """
         self.logging_handler = LoggingHandler(self.ui.ftr_logging_lbl)
         logger.addHandler(self.logging_handler)
         logger.setLevel("NOTSET")
 
-        self.ui.ftr_url_lbl.setText(f"Archiver URL: {getenv('PYDM_ARCHIVER_URL')}")
-        self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
+        self.ui.ftr_node_lbl.setText(os.uname().nodename)
+        self.ui.ftr_user_lbl.setText(os.getlogin())
+        self.ui.ftr_pid_lbl.setText(str(os.getpid()))
         self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.ui.ftr_url_lbl.setText(os.getenv('PYDM_ARCHIVER_URL'))
+        self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
