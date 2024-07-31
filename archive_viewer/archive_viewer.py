@@ -11,9 +11,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
-
-        self.ui.main_spltr.setCollapsible(0, False)
-        self.ui.main_spltr.setStretchFactor(0, 1)
+        self.configure_app()
 
         self.axis_table_init()
         self.traces_table_init()
@@ -21,6 +19,9 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         self.curve_delegates_init()
         self.axis_delegates_init()
+
+        self.ui.main_spltr.setCollapsible(0, False)
+        self.ui.main_spltr.setStretchFactor(0, 1)
 
         self.button_spans = {self.ui.half_min_scale_btn: 30,
                              self.ui.min_scale_btn: 60,
@@ -33,13 +34,25 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
-        app = QApplication.instance()
-        app.setStyle(CenterCheckStyle())
-
     def file_menu_items(self) -> dict:
-        """Add export & import functionality to File menu; override Display.file_menu_items"""
+        """Add export & import functionality to File menu"""
         return {"save": (self.export_save_file, "Ctrl+S"),
                 "load": (self.import_save_file, "Ctrl+L")}
+
+    def configure_app(self):
+        """UI changes to be made to the PyDMApplication"""
+        app = QApplication.instance()
+
+        # Hide navigation bar by default (can be shown in menu bar)
+        app.main_window.toggle_nav_bar(False)
+        app.main_window.ui.actionShow_Navigation_Bar.setChecked(False)
+
+        # Hide status bar by default (can be shown in menu bar)
+        app.main_window.toggle_status_bar(False)
+        app.main_window.ui.actionShow_Status_Bar.setChecked(False)
+
+        # Add style to center checkboxes in table cells
+        app.setStyle(CenterCheckStyle())
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
