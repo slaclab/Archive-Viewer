@@ -1,8 +1,13 @@
+import argparse
+from typing import Tuple, List, Dict
+
+
 from functools import partial
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (QAbstractButton, QApplication)
 from pydm import Display
 from config import logger
+from av_file_convert import PathAction
 from mixins import (TracesTableMixin, AxisTableMixin, FileIOMixin)
 from styles import CenterCheckStyle
 
@@ -29,15 +34,21 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                              self.ui.week_scale_btn: 604800,
                              self.ui.month_scale_btn: 2628300,
                              self.ui.cursor_scale_btn: -1}
-        self.ui.timespan_btns.buttonClicked.connect(partial(self.set_plot_timerange))
+        self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
-    def file_menu_items(self) -> dict:
+        input_file, startup_pvs = self.parse_macros_and_args(macros, args)
+        if input_file:
+            self.import_save_file(input_file)
+        for p in startup_pvs:
+            self.curves_model.add_curve(p)
+
+    def menu_items(self) -> dict:
         """Add export & import functionality to File menu"""
-        return {"save": (self.export_save_file, "Ctrl+S"),
-                "load": (self.import_save_file, "Ctrl+L")}
+        return {"Export": (self.export_save_file, "Ctrl+S"),
+                "Import": (self.import_save_file, "Ctrl+L")}
 
     def configure_app(self):
         """UI changes to be made to the PyDMApplication"""
@@ -75,3 +86,58 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         timespan = self.button_spans[button]
 
         self.ui.archiver_plot.setAutoScroll(enable_scroll, timespan)
+
+    def parse_macros_and_args(self, macros: Dict[str, str | list], args: List[str]) -> Tuple[str, list]:
+        """Parse user provided macros and args into lists of PVs to use on
+        startup or which file to import on startup
+
+        Parameters
+        ----------
+        macros : Dict[str, Union[str, List]]
+            Dictionary containing all of the macros passed into PyDM
+        args : List[str]
+            List of all arguments passed into the application to be parsed
+
+        Returns
+        -------
+        tuple
+            A tuple containing the file to import from and the list of PVs to use on startup
+        """
+        # Construct an argument parser for args
+        trace_parser = argparse.ArgumentParser(description="Trace\nThis is a PyDM application "
+                                               + "used to display archived and live pv data.",
+                                               formatter_class=argparse.RawTextHelpFormatter)
+        trace_parser.add_argument("-i", "--input_file",
+                                  action=PathAction,
+                                  type=str,
+                                  default="",
+                                  help="Absolute file path to import from;\n"
+                                  + "Alternatively can be provided as INPUT_FILE macro")
+        trace_parser.add_argument("-p", "--pvs",
+                                  type=str,
+                                  nargs='*',
+                                  default=[],
+                                  help="List of PVs to show on startup;\n"
+                                       + "Alternatively can be provided as PV or PVS macros")
+
+        # Parse arguments and ignore unknowns
+        trace_args, unknown = trace_parser.parse_known_args(args)
+        if unknown:
+            logger.warning(f"Not using unknown arguments: {unknown}")
+
+        # Get the file to import from if one is provided. Prioritize args over macro
+        input_file = trace_args.input_file
+        if not input_file and 'INPUT_FILE' in macros:
+            input_file = macros['INPUT_FILE']
+
+        startup_pvs = []
+        if 'PV' in macros:
+            startup_pvs.append(macros['PV'])
+        if 'PVS' in macros:
+            startup_pvs.append(*macros['PVS'])
+        startup_pvs.append(*trace_args)
+
+        # Remove duplicates from startup_pvs
+        startup_pvs = list(dict.fromkeys(startup_pvs))
+
+        return (input_file, startup_pvs)

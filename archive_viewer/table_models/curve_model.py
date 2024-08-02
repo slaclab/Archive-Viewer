@@ -187,3 +187,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The requested curve.
         """
         return self._plot.curveAtIndex(index)
+
+    def add_curve(self, channel: str):
+        index = self.index(self.rowCount() - 1, 0)
+        self.setData(index, channel)
