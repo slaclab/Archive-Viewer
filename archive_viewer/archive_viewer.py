@@ -1,8 +1,5 @@
 import argparse
 from typing import Tuple, List, Dict
-
-
-from functools import partial
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (QAbstractButton, QApplication)
 from pydm import Display
