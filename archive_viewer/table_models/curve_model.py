@@ -213,4 +213,4 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             Channel for the new curve
         """
         index = self.index(self.rowCount() - 1, 0)
-        self.setData(index, channel)
+        self.setData(index, channel, Qt.EditRole)

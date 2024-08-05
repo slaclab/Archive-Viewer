@@ -101,7 +101,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         Parameters
         ----------
-        macros : Dict[str, Union[str, List]]
+        macros : Dict[str, str | list]
             Dictionary containing all of the macros passed into PyDM
         args : List[str]
             List of all arguments passed into the application to be parsed
@@ -111,6 +111,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         tuple
             A tuple containing the file to import from and the list of PVs to use on startup
         """
+        # Default macros is None
+        if not macros:
+            macros = {}
+
         # Construct an argument parser for args
         trace_parser = argparse.ArgumentParser(description="Trace\nThis is a PyDM application "
                                                + "used to display archived and live pv data.",
@@ -138,12 +142,15 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         if not input_file and 'INPUT_FILE' in macros:
             input_file = macros['INPUT_FILE']
 
-        startup_pvs = []
-        if 'PV' in macros:
-            startup_pvs.append(macros['PV'])
-        if 'PVS' in macros:
-            startup_pvs.append(*macros['PVS'])
-        startup_pvs.append(*trace_args)
+        # Get the list of PVs to show on startup
+        startup_pvs = trace_args.pvs
+        for key in ("PV", "PVS"):
+            if key in macros:
+                val = macros[key]
+                if isinstance(val, str):
+                    startup_pvs.append(val)
+                elif isinstance(val, list):
+                    startup_pvs += val
 
         # Remove duplicates from startup_pvs
         startup_pvs = list(dict.fromkeys(startup_pvs))
