@@ -16,8 +16,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
     def __init__(self, parent=None, args=None, macros=None, ui_filename=__file__.replace(".py", ".ui")) -> None:
         super(ArchiveViewer, self).__init__(parent=parent, args=args,
                                             macros=macros, ui_filename=ui_filename)
+        # Set up PyDMApplication
         self.configure_app()
 
+        # Initialize the Mixins
         self.axis_table_init()
         self.traces_table_init()
         self.file_io_init()
@@ -25,9 +27,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
         self.curve_delegates_init()
         self.axis_delegates_init()
 
-        self.ui.main_spltr.setCollapsible(0, False)
-        self.ui.main_spltr.setStretchFactor(0, 1)
-
+        # Create reference dict for timespan_btns button group
         self.button_spans = {self.ui.half_min_scale_btn: 30,
                              self.ui.min_scale_btn: 60,
                              self.ui.hour_scale_btn: 3600,
@@ -36,14 +36,18 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                              self.ui.cursor_scale_btn: -1}
         self.ui.timespan_btns.buttonClicked.connect(self.set_plot_timerange)
 
+        # Click "Cursor" button on plot-mouse interaction
         plot_viewbox = self.ui.archiver_plot.plotItem.vb
         plot_viewbox.sigRangeChangedManually.connect(self.ui.cursor_scale_btn.click)
 
+        # Parse macros & arguments, then include them in startup
         input_file, startup_pvs = self.parse_macros_and_args(macros, args)
         if input_file:
             self.import_save_file(input_file)
-        for p in startup_pvs:
-            self.curves_model.add_curve(p)
+        for pv in startup_pvs:
+            if pv in self.curves_model:
+                continue
+            self.curves_model.add_curve(pv)
 
     def menu_items(self) -> dict:
         """Add export & import functionality to File menu"""
@@ -64,6 +68,10 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
 
         # Add style to center checkboxes in table cells
         app.setStyle(CenterCheckStyle())
+
+        # Adjust settings for main_spltr
+        self.ui.main_spltr.setCollapsible(0, False)
+        self.ui.main_spltr.setStretchFactor(0, 1)
 
     @Slot(QAbstractButton)
     def set_plot_timerange(self, button: QAbstractButton) -> None:
