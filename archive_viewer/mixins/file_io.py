@@ -35,14 +35,15 @@ class FileIOMixin:
             logger.error(e)
             self.export_save_file()
 
-    def import_save_file(self) -> None:
+    def import_save_file(self, file_name: str | Path = None) -> None:
         """Prompt the user for which config file to import from"""
         # Get the save file from the user
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open Archive Viewer",
-                                                   str(self.io_path),
-                                                   "Python Archive Viewer (*.pyav);;"
-                                                   + "Java Archive Viewer (*.xml);;"
-                                                   + "All Files (*)")
+        if not file_name:
+            file_name, _ = QFileDialog.getOpenFileName(self, "Open Archive Viewer",
+                                                       str(self.io_path),
+                                                       "Python Archive Viewer (*.pyav);;"
+                                                       + "Java Archive Viewer (*.xml);;"
+                                                       + "All Files (*)")
         file_name = Path(file_name)
         if not file_name.is_file():
             return

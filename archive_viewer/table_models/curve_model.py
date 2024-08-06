@@ -27,6 +27,22 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
         self._row_names = []
         self._axis_model = axis_model
 
+    def __contains__(self, key: str) -> bool:
+        """Check if the given key is a channel that already exists in the model.
+        Allows for the use of the 'in' keyword.
+
+        Parameters
+        ----------
+        key : str
+            Channel to check existence of
+
+        Returns
+        -------
+        bool
+            If the channel already exists in the model
+        """
+        return key in [curve.address for curve in self._plot._curves]
+
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
 
@@ -187,3 +203,14 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The requested curve.
         """
         return self._plot.curveAtIndex(index)
+
+    def add_curve(self, channel: str) -> None:
+        """Add a default curve with the given channel in the last row of the model
+
+        Parameters
+        ----------
+        channel : str
+            Channel for the new curve
+        """
+        index = self.index(self.rowCount() - 1, 0)
+        self.setData(index, channel, Qt.EditRole)

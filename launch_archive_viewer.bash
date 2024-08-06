@@ -12,7 +12,23 @@ exit_abnormal(){
     exit 1
 }
 
+MACROS=""
+ARGS=""
+
+while [ $# -gt 0 ]
+do
+    case $1 in
+        -m | --macros) MACROS="$2"
+                       shift ;;
+        *) ARGS+="$1 " ;;
+    esac
+    shift
+done
+
+echo $@
+
 pydm --hide-nav-bar --hide-status-bar \
-    archive_viewer.py
+    -m "$MACROS" \
+    archive_viewer.py "$ARGS"
 
 exit 0
