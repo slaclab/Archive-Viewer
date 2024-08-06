@@ -140,7 +140,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
             input_file = macros['INPUT_FILE']
 
         # Get the list of PVs to show on startup
-        startup_pvs = trace_args.pvs
+        startup_pvs = []
         for key in ("PV", "PVS"):
             if key in macros:
                 val = macros[key]
@@ -148,6 +148,7 @@ class ArchiveViewer(Display, TracesTableMixin, AxisTableMixin, FileIOMixin):
                     startup_pvs.append(val)
                 elif isinstance(val, list):
                     startup_pvs += val
+        startup_pvs += trace_args.pvs
 
         # Remove duplicates from startup_pvs
         startup_pvs = list(dict.fromkeys(startup_pvs))
