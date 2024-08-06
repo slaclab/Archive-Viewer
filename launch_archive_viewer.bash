@@ -13,23 +13,22 @@ exit_abnormal(){
 }
 
 MACROS=""
-IMPORT_FILE=""
+ARGS=""
 
 while [ $# -gt 0 ]
 do
     case $1 in
         -m | --macros) MACROS="$2"
                        shift ;;
-        -i | --import) IMPORT_FILE="$2"
-                       shift ;;
-        -h | --help) exit_abnormal ;;
-        *) exit_abnormal
+        *) ARGS+="$1 " ;;
     esac
     shift
 done
 
+echo $@
+
 pydm --hide-nav-bar --hide-status-bar \
-    -m "MACROS" \
-    archive_viewer.py
+    -m "$MACROS" \
+    archive_viewer.py "$ARGS"
 
 exit 0
