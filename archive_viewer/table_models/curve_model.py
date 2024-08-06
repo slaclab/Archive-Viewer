@@ -23,9 +23,11 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
     def __init__(self, parent: Optional[QObject], plot: BasePlot, axis_model: ArchiverAxisModel) -> None:
         super(ArchiverCurveModel, self).__init__(plot, parent)
-        self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:] + ("",)
+        # Remove columns for bar width, limits, and thresholds. Bar graph plot style is unused
+        self._column_names = self._column_names[:6] + ("Style",) + self._column_names[6:10] + ("",)
         self._row_names = []
         self._axis_model = axis_model
+        self.append()
 
     def get_data(self, column_name: str, curve: ArchivePlotCurveItem) -> Any:
         """Get data from the model based on column name.
@@ -39,7 +41,10 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
             The curve that data should be returned for.
         """
         if column_name == "Style":
-            return curve.plot_style
+            if curve.stepMode in ["right", "left", "center"]:
+                return "Step"
+            elif not curve.stepMode:
+                return "Direct"
         return super(ArchiverCurveModel, self).get_data(column_name, curve)
 
     def set_data(self, column_name: str, curve: ArchivePlotCurveItem, value: Any) -> bool:
@@ -77,7 +82,7 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
 
             ret_code = True
         elif column_name == "Style":
-            curve.plot_style = str(value)
+            curve.stepMode = value
             ret_code = True
         else:
             ret_code = super(ArchiverCurveModel, self).set_data(column_name, curve, value)
