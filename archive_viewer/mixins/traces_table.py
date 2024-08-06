@@ -1,13 +1,21 @@
-from typing import (Dict, Any)
+from typing import Dict, Any
+from qtpy.QtGui import QKeyEvent
 from qtpy import sip
-from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject)
+from qtpy.QtCore import (Slot, QPoint, QModelIndex, QObject, Qt)
 from qtpy.QtWidgets import (QHeaderView, QMenu, QAction, QTableView, QDialog,
-                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton)
+                            QVBoxLayout, QGridLayout, QLineEdit, QPushButton, QAbstractItemView, QTableWidget)
 from pydm.widgets.baseplot import BasePlotCurveItem
 from pydm.widgets.baseplot_curve_editor import PlotStyleColumnDelegate
 from config import logger
-from widgets import (ArchiveSearchWidget, ColorButtonDelegate, ComboBoxDelegate,
-                     DeleteRowDelegate, FloatDelegate)
+from pydm.widgets.archiver_time_plot import FormulaCurveItem
+from widgets import (
+    ArchiveSearchWidget,
+    ColorButtonDelegate,
+    ComboBoxDelegate,
+    DeleteRowDelegate,
+    FloatDelegate,
+    InsertPVDelegate
+)
 from table_models import ArchiverCurveModel
 
 
@@ -21,8 +29,7 @@ class TracesTableMixin:
         self.ui.traces_tbl.setModel(self.curves_model)
 
         self.menu = PVContextMenu(self)
-        self.ui.traces_tbl.customContextMenuRequested.connect(
-            self.custom_context_menu)
+        self.ui.traces_tbl.customContextMenuRequested.connect(self.custom_context_menu)
 
         hdr = self.ui.traces_tbl.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
@@ -182,73 +189,96 @@ class PVContextMenu(QMenu):
 
 
 class FormulaDialog(QDialog):
+    """Formula Dialog - when a user right clicks on a row in the list of curves, they have the option to input a formula
+    They could opt to type it instead, but this opens a box that is a nicer UI for inputting a formula."""
     def __init__(self, parent: QObject) -> None:
         super().__init__(parent)
         self.setWindowTitle("Formula Input")
 
         # Create the layout for the dialog
         layout = QVBoxLayout(self)
-
         # Create the QLineEdit for formula input
         self.field = QLineEdit(self)
+        self.curveModel = self.parent().parent().curves_model
+        self.pv_list = QTableView(self)
+        #We're going to copy the list of PVs from the curve model. We're also not going to allow the user to make edits to the list of PVs
+        self.pv_list.setModel(self.curveModel)
+        self.pv_list.setEditTriggers(QAbstractItemView.EditTriggers(0))
+        self.pv_list.setMaximumWidth(1000)
+        header = self.pv_list.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        for i in range(1, self.curveModel.columnCount() - 1):
+            # Hide all columns that arent useful, but keep one left over to add a button to
+            self.pv_list.setColumnHidden(i, True)
+        insertButton = InsertPVDelegate(self.pv_list, self.curveModel)
+        insertButton.button_clicked.connect(self.field.insert)
+        self.pv_list.setItemDelegateForColumn(self.curveModel.columnCount() - 1, insertButton)
+        layout.addWidget(self.pv_list)
         layout.addWidget(self.field)
 
-        # Define the list of calculator buttons
-        buttons = ["7", "8", "9", "+",
-                   "4", "5", "6", "-",
-                   "1", "2", "3", "*",
-                   "0", "(", ")", "/",
-                   ".", "PV", "Clear", "="]
+        self.index = self.parent().selected_index
+
+        # Define the list of calculator buttons.
+        # It's a bunch of preset buttons, but users can type other functions under math.
+        buttons = ["7",       "8",     "9",      "+",     "(",      ")",
+                   "4",       "5",     "6",      "-",    "^2", "sqrt()",
+                   "1",       "2",     "3",      "*",   "^-1",  "ln()",
+                   "0",       "e",    "pi",      "/", "sin()", "asin()",
+                   ".",   "abs()", "min()",      "^", "cos()", "acos()",
+                   "PV",  "Clear", "max()", "mean()", "tan()", "atan()"]
 
         # Create the calculator buttons and connect them to the input field
         grid_layout = QGridLayout()
         for i, button_text in enumerate(buttons):
             button = QPushButton(button_text, self)
-            row = i // 4
-            col = i % 4
+            row = i // 6
+            col = i % 6
             grid_layout.addWidget(button, row, col)
-
             # Connect the button clicked signal to the appropriate action
+            # PV currently does nothing, this is a remnant
+            # From when we would have the pv_list open in a new window
             if button_text == "PV":
-                button.clicked.connect(lambda _: self.field.insert("PV"))
+                # TODO: Either give a function for this button or replace it
+                pass
             elif button_text == "Clear":
                 button.clicked.connect(lambda _: self.field.clear())
-            elif button_text == "=":
-                button.clicked.connect(self.evaluate_formula)
             else:
                 button.clicked.connect(lambda _, text=button_text: self.field.insert(text))
-
         layout.addLayout(grid_layout)
-
-        # Add an input field for PV name
-        self.pv_name_input = QLineEdit(self)
-        self.pv_name_input.setPlaceholderText("Enter PV name")
-        layout.addWidget(self.pv_name_input)
 
         # Add an "OK" button to accept the formula and close the dialog
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept_formula)
         layout.addWidget(ok_button)
 
-    def evaluate_formula(self, **kwargs: Dict[str, Any]) -> None:
-        # Evaluate the formula expression and update the formula input field
-        # TODO: Check if PVs used are in Table Model
-        #   if yes, replace with row header; if no, add to TableModel and replace with row header
-        formula = self.field.text()
-        try:
-            result = eval(formula)
-            self.field.setText(str(result))
-        except (SyntaxError, TypeError):
-            self.field.setText("Error")
-            logger.error("Invalid formula evaluated.")
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        # Special key press tracker, just so that if enter or return is pressed the formula dialog attempts to submit the formula
+        if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+            self.accept_formula()
+        return super().keyPressEvent(e)
+
+    def exec_(self):
+        """ When the formula dialog is opened (every time) we need to
+            update it with the latest information on the curve model and
+            also populate the text box with the pre-existing formula (if it already was there)"""
+        self.index = self.parent().selected_index
+        self.pv_list.setRowHidden(len(self.curveModel._row_names) - 1, True)
+        for i in range(self.curveModel.rowCount() - 1):
+            self.pv_list.setRowHidden(i, False)
+        index = self.curveModel.index(self.index.row(), 0)
+        curve = self.curveModel._plot._curves[self.index.row()]
+        if index.data() and isinstance(curve, FormulaCurveItem):
+            self.field.setText(str(index.data()).strip("f://"))
+        else:
+            self.field.setText("")
+        super().exec_()
 
     def accept_formula(self, **kwargs: Dict[str, Any]) -> None:
         # Retrieve the formula and PV name and perform desired actions
-        # TODO: Evaluate the formula before accepting, prompt user if invalid(?)
-        formula = self.field.text()
-        pv_name = self.pv_name_input.text()
-
-        print("Formula:", formula)
-        print("PV Name:", pv_name)
-
-        self.accept()
+        # We take in the formula (prepend the formula tag) and attempt to create a curve. Iff it passes, we close the window
+        formula = "f://" + self.field.text()
+        # pv_name = self.pv_name_input.text()
+        passed = self.curveModel.replaceToFormula(index = self.curveModel.index(self.parent().selected_index.row(), 0), formula = formula)
+        if passed:
+            self.field.setText("")
+            self.accept()

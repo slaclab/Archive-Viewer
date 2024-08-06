@@ -141,6 +141,11 @@ class ComboBoxDelegate(QStyledItemDelegate):
             data = curr_text
         model.setData(index, data, Qt.EditRole)
 
+    def setEditorData(self, editor: QComboBox, index: QModelIndex) -> None:
+        """Set the editor's data to match the table model's data."""
+        value = index.data(Qt.DisplayRole)
+        editor.setCurrentText(value)
+
     def eventFilter(self, object: QObject, event: QEvent) -> bool:
         """Disable scrolling for widgets that are not the focus."""
         if event.type() == QEvent.Wheel and not object.hasFocus():
@@ -298,7 +303,45 @@ class DeleteRowDelegate(QStyledItemDelegate):
     def setModelData(self, _: QPushButton, model: QAbstractTableModel, index: QModelIndex) -> None:
         """When the setModelData slot is triggered, the row is removed."""
         model.removeAtIndex(index)
+class InsertPVDelegate(QStyledItemDelegate):
+    """InsertPVDelegate is a QStyledItemDelegate to display a persistent
+    QPushButton widget on the FormulaDialog that allow's the user to insert the PV.
 
+    Parameters
+    ----------
+    parent : FormulaDialog
+        The parent object for the InsertPVDelegate. Should be the
+        associated QTableView
+    """
+    button_clicked = Signal(str)
+    def __init__(self, parent: QTableView, model: QAbstractItemModel) -> None:
+        super().__init__(parent)
+        self.editor_list = []
+        self.model = model
+
+    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex) -> None:
+        """Initialize a QPushButton to insert the table's header."""
+        logger.debug("called method: InsertPVDelegate.initStyleOption")
+        if index.row() >= len(self.editor_list):
+            editor = QPushButton(self.parent())
+            editor.setText("Insert")
+            editor.setToolTip("Insert PV")
+            #We don't want to allow people to select the button, only click it
+            editor.setFocusPolicy(Qt.NoFocus)
+            editor.pressed.connect(lambda: self.button_clicked.emit("{"+ self.model._row_names[index.row()]+"}"))
+            self.editor_list.append(editor)
+            self.parent().setIndexWidget(index, editor)
+
+        return super().initStyleOption(option, index)
+
+    def destroyEditor(self, editor: QWidget, index: QModelIndex) -> None:
+        """Destroy the editor for a defined index."""
+        if index.row() < len(self.editor_list):
+            logger.debug(f"Removing {self.editor_list[index.row()]} from delegate")
+            self.editor_list[index.row()].deleteLater()
+            del self.editor_list[index.row()]
+            return
+        return super().destroyEditor(editor, index)
 
 class FloatDelegate(QStyledItemDelegate):
     """FloatDelegate is a QStyledItemDelegate to display a

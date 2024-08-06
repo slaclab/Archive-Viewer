@@ -17,8 +17,8 @@ if not save_file_dir.is_dir():
     save_file_dir = Path.home()
     logger.warning(f"Setting save_file_dir to home: {save_file_dir}")
 
-archiver_urls = loaded_json['archivers']
+archiver_urls = loaded_json["archivers"]
 if not archiver_urls:
     archiver_urls = [os.getenv("PYDM_ARCHIVER_URL")]
 
-color_palette = [QColor(hex_code) for hex_code in loaded_json['colors']]
+color_palette = [QColor(hex_code) for hex_code in loaded_json["colors"]]
