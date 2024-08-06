@@ -1,5 +1,5 @@
 from typing import (Any, List, Dict)
-from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex)
+from qtpy.QtCore import (Qt, QVariant, QPersistentModelIndex, QModelIndex, Signal)
 from pydm.widgets.baseplot import (BasePlot, BasePlotAxisItem)
 from pydm.widgets.axis_table_model import BasePlotAxesModel
 
@@ -15,12 +15,14 @@ class ArchiverAxisModel(BasePlotAxesModel):
     parent : QObject, optional
         The model's parent, by default None
     """
+    remove_curve = Signal(object)
     def __init__(self, plot: BasePlot, parent=None) -> None:
         super().__init__(plot, parent)
-        self._column_names = self._column_names + ("",)
-
+        self._column_names = self._column_names + ("Hidden","",)
+        self.axis_count = 0
         self.checkable_col = {self.getColumnIndex("Enable Auto Range"),
-                              self.getColumnIndex("Log Mode")}
+                              self.getColumnIndex("Log Mode"),
+                              self.getColumnIndex("Hidden")}
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         """Return flags that determine how users can interact with the items in the table"""
@@ -65,6 +67,10 @@ class ArchiverAxisModel(BasePlotAxesModel):
         """
         if not index.isValid():
             return QVariant()
+        # Specifically the Hidden column must be affected in axis_model as opposed to elsewhere
+        elif role == Qt.CheckStateRole and self._column_names[index.column()] == "Hidden":
+            self.plot._axes[index.row()].setHidden(bool(value))
+            return True
         elif role == Qt.CheckStateRole and index.column() in self.checkable_col:
             return super().setData(index, value, Qt.EditRole)
         elif index.column() not in self.checkable_col:
@@ -78,18 +84,17 @@ class ArchiverAxisModel(BasePlotAxesModel):
         ----------
         name : str
             The name for the new axis item. If none is passed in, the
-            axis is named "New Axis <row_count>".
+            axis is named "Axis <row_count>".
         """
         if not name:
             axis_count = self.rowCount() + 1
-            name = f"New Axis {axis_count}"
+            name = f"Axis {axis_count}"
             while name in self.plot.plotItem.axes:
                 axis_count += 1
-                name = f"New Axis {axis_count}"
-
+                name = f"Axis {axis_count}"
         super().append(name)
-
         new_axis = self.get_axis(-1)
+        new_axis.setLabel(name, color="black")
         row = self.rowCount() - 1
         self.attach_range_changed(row, new_axis)
 
@@ -137,9 +142,27 @@ class ArchiverAxisModel(BasePlotAxesModel):
         index : QModelIndex
             An index in the row to be removed.
         """
-        if self.rowCount() <= 1:
-            self.append()
+        if not index.isValid() or self.rowCount() == 1:
+            return False
+        axis = self.get_axis(index.row())
+        while axis._curves:
+            curve = axis._curves[0]
+            if curve == self._plot._curves[-1] or len(self._plot._curves) == 1:
+                # Reasons for us to in fact not delete this axis despite manual attempt by the user
+                return
+            self.remove_curve.emit(curve)
         super().removeAtIndex(index)
+
+    def setHidden(self, axis: BasePlotAxisItem, hidden: bool) -> None:
+        """Hides the axis at the given table index.
+
+        Parameters
+        ----------
+        index : QModelIndex
+            An index in the row to be hidde.
+        """
+        # Hide the axis
+        axis.setHidden(shouldHide=hidden)
 
     def get_axis(self, index: int) -> BasePlotAxisItem:
         """Return the BasePlotAxisItem for a given row number.

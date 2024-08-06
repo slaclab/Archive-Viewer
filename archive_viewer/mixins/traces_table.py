@@ -35,7 +35,6 @@ class TracesTableMixin:
         """Set column delegates for the Traces table to display widgets."""
         axis_col = self.curves_model.getColumnIndex("Y-Axis Name")
         axis_combo_del = ComboBoxDelegate(self.ui.traces_tbl, self.axis_table_model)
-        axis_combo_del.sigTextChange.connect(self.axis_change)
         self.ui.traces_tbl.setItemDelegateForColumn(axis_col, axis_combo_del)
 
         color_col = self.curves_model.getColumnIndex("Color")
@@ -112,24 +111,6 @@ class TracesTableMixin:
         if index.isValid() and not is_color:
             self.menu.selected_index = index
             self.menu.popup(table.viewport().mapToGlobal(pos))
-
-    @Slot(int, str)
-    def axis_change(self, row: int, axis_name: str) -> None:
-        """Slot for connecting a curve to a specified axis.
-
-        Parameters
-        ----------
-        row : int
-            The row of the table associated with the curve changed
-        axis_name : str
-            The name of the new axis the curve should be on
-        """
-        if not axis_name:
-            return
-        # Get the curve and check if it has been deleted
-        curve = self.curves_model.curve_at_index(row)
-        if not sip.isdeleted(curve):
-            self.ui.archiver_plot.plotItem.linkDataToAxis(curve, axis_name)
 
 
 class PVContextMenu(QMenu):
