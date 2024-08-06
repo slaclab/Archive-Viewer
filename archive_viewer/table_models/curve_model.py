@@ -76,6 +76,9 @@ class ArchiverCurveModel(PyDMArchiverTimePlotCurvesModel):
                 self.append()
 
             ret_code = True
+            self.plot._legend.removeItem(curve.name())
+            curve.setData(name=str(value))
+            self.plot._legend.addItem(curve, curve.name())
         elif column_name == "Style":
             curve.plot_style = str(value)
             ret_code = True
