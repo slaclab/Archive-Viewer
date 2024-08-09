@@ -1,9 +1,8 @@
 from random import random
 from typing import (Any, Union)
 from qtpy.QtGui import (QColor, QMouseEvent)
-from qtpy.QtCore import (Qt, Signal, QObject)
-from qtpy.QtWidgets import (QWidget, QSpacerItem, QCheckBox, QHBoxLayout,
-                            QSizePolicy, QPushButton, QColorDialog)
+from qtpy.QtCore import (Qt, Signal)
+from qtpy.QtWidgets import (QPushButton, QColorDialog)
 from config import color_palette
 
 
@@ -89,41 +88,3 @@ class ColorButton(QPushButton):
 
         dark_factor = (index // len(color_palette)) * 35
         return color.darker(100 + dark_factor)
-
-
-class CenterCheckbox(QWidget):
-    """CenterCheckbox is a QWidget that creates a checkbox surrounded by
-    QSpacerItems. This is used in tables, where QCheckBoxes are not centered.
-
-    Parameters
-    ----------
-    parent : QObject
-        The parent object for the ComboBoxDelegate.
-    init_data : bool, optional
-        Whether the QCheckBox should be checked by default, by default True.
-    """
-    toggled = Signal(bool)
-    def __init__(self, parent: QObject, init_data: bool = True) -> None:
-        super().__init__(parent)
-
-        self.check_box = QCheckBox(parent)
-        self.check_box.setChecked(init_data)
-        self.check_box.toggled.connect(self.toggled)
-
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addItem(QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Expanding))
-        layout.addWidget(self.check_box)
-        layout.addItem(QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Expanding))
-
-        self.setLayout(layout)
-
-    @property
-    def checkState(self) -> bool:
-        """Check state getter."""
-        return self.check_box.isChecked()
-
-    @checkState.setter
-    def checkState(self, state: bool) -> None:
-        """Set the check state of the QCheckBox."""
-        self.check_box.setChecked(state)
