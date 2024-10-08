@@ -2,13 +2,11 @@ import datetime
 
 import pytest
 
-from main import TraceDisplay
 from mixins.file_io import IOTimeParser
 
 FAKE_TIME = datetime.datetime(2024, 6, 30)
 
 
-# Pytest fixtures for timeparser and setting datetime.now()
 @pytest.fixture(scope="class")
 def time_parser():
     """Fixture for an instance of the IOTimeParser.
@@ -22,6 +20,15 @@ def time_parser():
 
 @pytest.fixture
 def patch_datetime_now(monkeypatch):
+    """Patch to override datetime.datetime.now so that it is an expected value
+    that can be tested against.
+
+    Parameters
+    ----------
+    monkeypatch : fixture
+        To override datetime.datetime.now
+    """
+
     class mydatetime(datetime.datetime):
         @classmethod
         def now(cls):
@@ -30,11 +37,11 @@ def patch_datetime_now(monkeypatch):
     monkeypatch.setattr(datetime, "datetime", mydatetime)
 
 
-def test_export_save_file(qtrace: TraceDisplay):
+def test_export_save_file(qtrace):
     pass
 
 
-def test_import_save_file(qtrace: TraceDisplay):
+def test_import_save_file(qtrace):
     pass
 
 
@@ -57,7 +64,29 @@ def test_import_save_file(qtrace: TraceDisplay):
     ],
     # fmt: on
 )
-def test_time_parser(patch_datetime_now, time_parser: IOTimeParser, given: tuple, expected: tuple):
+def test_time_parser(patch_datetime_now, time_parser, given, expected):
+    """Test the IOTimeParser correctly parses start and end strings into datetimes.
+    The datetimes may be relative to datetime.now or they may be absolute.
+
+    Parameters
+    ----------
+    patch_datetime_now : fixture
+        To override datetime.datetime.now
+    time_parser : fixture
+        Instance of IOTimeParser for application testing
+    given : tuple
+        The given start & end strings to test against
+    expected : tuple
+        The expected start & end datetimes to be returned. If None, then an
+        exception is expected.
+
+    Expectations
+    ------------
+    IOTimeParser should be able to correctly parse start and end strings that
+    are absolute or relative to the current time. If the start time is after the
+    current time, that is impossible and will raise an exception. IOTimeParser
+    should be able to determine what the base of the relative time should be.
+    """
     # Test that expected exceptions get raised
     if expected[0] is None:
         with pytest.raises(ValueError) as exc_info:

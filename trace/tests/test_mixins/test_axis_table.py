@@ -1,4 +1,3 @@
-from main import TraceDisplay
 from widgets.item_delegates import (
     ComboBoxDelegate,
     DeleteRowDelegate,
@@ -6,8 +5,18 @@ from widgets.item_delegates import (
 )
 
 
-def test_axis_table_delegates(qtrace: TraceDisplay):
-    """Ensure that the axis_tbl looks and functions as expected"""
+def test_axis_table_delegates(qtrace):
+    """Ensure that the axis_tbl's Item Delegates are set correctly.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    All of the table's Item Delegates are what the user expects.
+    """
     axis_model = qtrace.axis_table_model
     table_view = qtrace.ui.time_axis_tbl
 
@@ -22,9 +31,9 @@ def test_axis_table_delegates(qtrace: TraceDisplay):
     assert type(table_view.itemDelegateForColumn(delete_col)) is DeleteRowDelegate
 
 
-def test_set_time_axis_range(qtrace: TraceDisplay):
+def test_set_time_axis_range(qtrace):
     pass
 
 
-def test_set_axis_datetimes(qtrace: TraceDisplay):
+def test_set_axis_datetimes(qtrace):
     pass

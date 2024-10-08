@@ -7,12 +7,12 @@ from main import TraceDisplay
 
 @pytest.fixture(scope="session")
 def qapp(qapp_args):
-    """
-    Fixture for a PyDMApplication app instance.
+    """Fixture for a PyDMApplication app instance.
 
     Parameters
     ----------
-    qapp_args: Arguments for the QApp.
+    qapp_args : list
+        Arguments for the QApp.
 
     Yields
     -------

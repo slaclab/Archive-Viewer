@@ -34,10 +34,11 @@ def test_color_change(qtbot, color_btn, test_color):
     Parameters
     ----------
     qtbot : fixture
-        pytest-qt window for widget test
+        pytest-qt window for widget testing
     color_btn : fixture
-        The current instance of ColorButton
+        Instance of ColorButton for widget testing
     test_color : QColor
+        The color arguments to test against
 
     Expectations
     ------------
@@ -60,9 +61,9 @@ def test_color_no_change(qtbot, color_btn):
     Parameters
     ----------
     qtbot : fixture
-        pytest-qt window for widget test
+        pytest-qt window for widget testing
     color_btn : fixture
-        The current instance of ColorButton
+        Instance of ColorButton for widget testing
 
     Expectations
     ------------
@@ -81,9 +82,9 @@ def test_right_click(qtbot, color_btn):
     Parameters
     ----------
     qtbot : fixture
-        pytest-qt window for widget test
+        pytest-qt window for widget testing
     color_btn : fixture
-        The current instance of ColorButton
+        Instance of ColorButton for widget testing
 
     Expectations
     ------------

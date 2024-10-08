@@ -1,8 +1,15 @@
-from main import TraceDisplay
+def test_defaults(qtrace):
+    """Ensure that TraceDisplay's default values are set correctly.
 
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
 
-def test_defaults(qtrace: TraceDisplay):
-    """Check if Trace launches in an expected state"""
+    Expectations
+    ------------
+    All of the application's values are in an expected state.
+    """
     # Timespan buttons: '1h' button should be checked
     assert qtrace.ui.timespan_btns.checkedButton() is qtrace.ui.hour_scale_btn
 
@@ -30,17 +37,17 @@ def test_defaults(qtrace: TraceDisplay):
     assert qtrace.crosshair_chckbx.isChecked() is False
 
 
-def test_parse_macros_and_args(qtrace: TraceDisplay):
+def test_parse_macros_and_args(qtrace):
     pass
 
 
-def test_git_version(qtrace: TraceDisplay):
+def test_git_version(qtrace):
     pass
 
 
-def test_reset_plot(qtrace: TraceDisplay):
+def test_reset_plot(qtrace):
     pass
 
 
-def test_set_plot_timerange(qtrace: TraceDisplay):
+def test_set_plot_timerange(qtrace):
     pass
