@@ -70,10 +70,8 @@ def test_color_no_change(qtbot, color_btn):
     The ColorButton instance should not emit any signal and should not change.
     """
     # Check that the color_change signal is not emitted
-    with qtbot.waitSignal(color_btn.color_changed, raising=False, timeout=100) as blocker:
+    with qtbot.assertNotEmitted(color_btn.color_changed, wait=500):
         color_btn.color = DEF_COLOR
-
-    assert blocker.args is None
 
 
 def test_right_click(qtbot, color_btn):
