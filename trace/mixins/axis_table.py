@@ -78,7 +78,7 @@ class AxisTableMixin:
 
         logger.debug(f"Setting plot's X-Axis range to {proc_range}")
         self.ui.main_plot.plotItem.vb.blockSignals(True)
-        self.ui.main_plot.plotItem.setXRange(*proc_range)
+        self.ui.main_plot.plotItem.setXRange(*proc_range, padding=0)
         self.ui.main_plot.plotItem.vb.blockSignals(False)
 
     @Slot(object, object)

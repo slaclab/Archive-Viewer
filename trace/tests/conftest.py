@@ -34,4 +34,9 @@ def qtrace(qapp):
     ------
     An instance of TraceDisplay.
     """
-    yield TraceDisplay()
+    trace = TraceDisplay()
+
+    # updateXAxis would be called on application render; necessary for testing X-Axis
+    trace.ui.main_plot.updateXAxis(True)
+
+    yield trace
