@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+
 def test_defaults(qtrace):
     """Ensure that TraceDisplay's default values are set correctly.
 
@@ -14,7 +17,8 @@ def test_defaults(qtrace):
     assert qtrace.ui.timespan_btns.checkedButton() is qtrace.ui.hour_scale_btn
 
     # Check plot's timespan will be set to 1 hour immediately after init
-    assert qtrace.ui.main_plot._time_span == 3600
+    axis_range = [datetime.fromtimestamp(r) for r in qtrace.ui.main_plot.getXAxis().range]
+    assert axis_range[1] - axis_range[0] == timedelta(hours=1)
 
     # Curve model should have one hidden curve
     assert qtrace.curves_model.rowCount() == 1
