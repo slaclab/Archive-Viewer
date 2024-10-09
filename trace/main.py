@@ -1,6 +1,8 @@
 import os
 import argparse
+from socket import gethostname
 from typing import Dict, List, Tuple, Union
+from getpass import getuser
 from logging import Handler, LogRecord
 from subprocess import run
 
@@ -94,10 +96,10 @@ class TraceDisplay(Display, TracesTableMixin, AxisTableMixin, FileIOMixin, PlotC
         logger.addHandler(self.logging_handler)
         logger.setLevel("NOTSET")
 
-        self.ui.ftr_node_lbl.setText(os.uname().nodename)
-        self.ui.ftr_user_lbl.setText(os.getlogin())
-        self.ui.ftr_pid_lbl.setText(str(os.getpid()))
         self.ui.ftr_ver_lbl.setText(self.git_version())
+        self.ui.ftr_node_lbl.setText(gethostname())
+        self.ui.ftr_user_lbl.setText(getuser())
+        self.ui.ftr_pid_lbl.setText(str(os.getpid()))
         self.ui.ftr_url_lbl.setText(os.getenv("PYDM_ARCHIVER_URL"))
         self.ui.ftr_time_lbl.channel = "ca://" + datetime_pv
 
