@@ -34,7 +34,7 @@ class FileIOMixin:
             self.io_path = file_name.parent
             self.converter.export_file(file_name, self.ui.main_plot)
         except FileNotFoundError as e:
-            logger.error(e)
+            logger.error(str(e))
             self.export_save_file()
 
     def import_save_file(self, file_name: Union[str, Path] = None) -> None:

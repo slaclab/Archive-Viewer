@@ -1,8 +1,12 @@
 import datetime
+from json import dumps
+from unittest import mock
 
 import pytest
 
+from config import logger
 from mixins.file_io import IOTimeParser
+from trace_file_convert import TraceFileConverter
 
 FAKE_TIME = datetime.datetime(2024, 6, 30)
 
@@ -37,8 +41,100 @@ def patch_datetime_now(monkeypatch):
     monkeypatch.setattr(datetime, "datetime", mydatetime)
 
 
-def test_export_save_file(qtrace):
-    pass
+@mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+def test_export_save_file_success(mock_get_save_name, qtrace, tmpdir):
+    """Test TraceDisplay.export_save_file() successfully writes a file and it
+    matches the expected output.
+
+    Parameters
+    ----------
+    mock_get_save_name : mock.patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    tmpdir : fixture
+         A fixture which will provide a temporary directory unique to each test function
+
+    Expectations
+    ------------
+    TraceDisplay and TraceFileConverter will make a file with the expected name and content.
+    """
+    # Construct testcase
+    file = tmpdir / "test_export_save_file_success.trc"
+    mock_get_save_name.return_value = (file.strpath, None)
+
+    # Construct plot_data to compare against
+    plot_data = TraceFileConverter.get_plot_data(qtrace.ui.main_plot)
+    for obj in plot_data["y-axes"] + plot_data["curves"] + plot_data["formula"]:
+        for k, v in obj.copy().items():
+            if v is None:
+                del obj[k]
+
+    qtrace.export_save_file()
+    assert file.isfile()
+    assert file.read() == dumps(plot_data, indent=4)
+
+
+@mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+@mock.patch.object(logger, "warning")
+def test_export_save_file_dir(mock_warning, mock_get_save_name, qtrace, tmpdir):
+    """Test TraceDisplay.export_save_file() is interrupted when the provided filename
+    is a directory.
+
+    Parameters
+    ----------
+    mock_warning : mock.patch
+        Mock the logger's warning function to confirm it is only called once
+    mock_get_save_name : mock.patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    tmpdir : fixture
+         A fixture which will provide a temporary directory unique to each test function
+
+    Expectations
+    ------------
+    No files/directories should be made and the logger should give a warning.
+    """
+    # Construct testcase
+    mock_get_save_name.return_value = (tmpdir.strpath, None)
+
+    qtrace.export_save_file()
+    mock_warning.assert_called_once_with("No file name provided to export save file to")
+    assert not tmpdir.isfile()
+
+
+@mock.patch("qtpy.QtWidgets.QFileDialog.getSaveFileName")
+@mock.patch.object(logger, "error")
+def test_export_save_file_invalid_extension(mock_error, mock_get_save_name, qtrace, tmpdir):
+    """Test TraceDisplay.export_save_file() is interrupted when the provided filename
+    has an extension other than *.trc . Needed to make a *.trc file after to prevent
+    a recursive loop.
+
+    Parameters
+    ----------
+    mock_error : mock.patch
+        Mock the logger's error function to confirm it is only called once
+    mock_get_save_name : mock.patch
+        Mock qtpy.QtWidgets.QFileDialog.getSaveFileName to return an expected file name
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+    tmpdir : fixture
+         A fixture which will provide a temporary directory unique to each test function
+
+    Expectations
+    ------------
+    An error should be given when trying to make the *.csv file, but *.trc succeeds.
+    """
+    # Construct testcases
+    file_csv = tmpdir / "test_export_save_file_invalid_extension.csv"
+    file_trc = tmpdir / "test_export_save_file_invalid_extension.trc"
+    mock_get_save_name.side_effect = [(file_csv.strpath, None), (file_trc.strpath, None)]
+
+    qtrace.export_save_file()
+    mock_error.assert_called_once_with("Incorrect output file format: .csv")
+    assert not file_csv.isfile()
+    assert file_trc.isfile()
 
 
 def test_import_save_file(qtrace):
@@ -78,7 +174,7 @@ def test_time_parser(patch_datetime_now, time_parser, given, expected):
         The given start & end strings to test against
     expected : tuple
         The expected start & end datetimes to be returned. If None, then an
-        exception is expected.
+        exception is expected
 
     Expectations
     ------------
