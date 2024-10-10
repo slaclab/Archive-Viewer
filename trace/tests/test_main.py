@@ -17,7 +17,7 @@ def test_defaults(qtrace):
     assert qtrace.ui.timespan_btns.checkedButton() is qtrace.ui.hour_scale_btn
 
     # Check plot's timespan will be set to 1 hour immediately after init
-    axis_range = [datetime.fromtimestamp(r) for r in qtrace.ui.main_plot.getXAxis().range]
+    axis_range = [datetime.fromtimestamp(int(r)) for r in qtrace.ui.main_plot.getXAxis().range]
     assert axis_range[1] - axis_range[0] == timedelta(hours=1)
 
     # Curve model should have one hidden curve

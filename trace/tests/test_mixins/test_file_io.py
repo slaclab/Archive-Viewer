@@ -137,7 +137,79 @@ def test_export_save_file_invalid_extension(mock_error, mock_get_save_name, qtra
     assert file_trc.isfile()
 
 
-def test_import_save_file(qtrace):
+@pytest.mark.parametrize(("test_file_ext"), [".trc", ".xml", ".stp"])
+@mock.patch("qtpy.QtWidgets.QFileDialog.getOpenFileName")
+def test_import_save_file_success(mock_get_open_name, patch_datetime_now, qtrace, test_file_ext):
+    """Test TraceDisplay.import_save_file() successfully opens a save file and
+    attempts to setup the application correctly.
+
+    Parameters
+    ----------
+    mock_get_open_name : mock.patch
+        Mock qtpy.QtWidgets.QFileDialog.getOpenFileName to return an expected file name
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    TraceDisplay and TraceFileConverter will make a file with the expected name and content.
+    """
+    test_filename = __file__.rsplit("/", 2)[0] + "/test_data/test_file" + test_file_ext
+    mock_get_open_name.return_value = (test_filename, None)
+
+    qtrace.import_save_file()
+    assert qtrace.curves_model.rowCount() == 2
+    # WILL FAIL:
+    # axis_table_model.set_model_axes is adding 2 extra for some reason
+    # Make test agnostic of other functions
+    assert qtrace.axis_table_model.rowCount() == 2
+
+
+def test_import_save_file_directory(qtrace):
+    """Test TraceDisplay.import_save_file() is interrupted when the provided filename
+    is either a directory or a nonexistent file.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The logger gives an error and quits early.
+    """
+    pass
+
+
+def test_import_save_file_invalid(qtrace):
+    """Test TraceDisplay.import_save_file() is interrupted when the provided file
+    contains no curves if it's a *.trc file or pvs if it's a *.xml file.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    The logger gives an error and prompts the user to select another file.
+    """
+    pass
+
+
+def test_import_save_file_hostname(qtrace):
+    """Test TraceDisplay.import_save_file() is interrupted when the provided filename
+    has a different Archiver URL than expected.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    A QMessageBox should be shown for the user to decide whether or not to continue.
+    """
     pass
 
 
