@@ -1,4 +1,3 @@
-from main import TraceDisplay
 from widgets.item_delegates import (
     ComboBoxDelegate,
     DeleteRowDelegate,
@@ -6,8 +5,18 @@ from widgets.item_delegates import (
 )
 
 
-def test_traces_table_delegates(qtrace: TraceDisplay):
-    """Ensure that the traces_table looks and functions as expected"""
+def test_traces_table_delegates(qtrace):
+    """Ensure that the traces_tbl's Item Delegates are set correctly.
+
+    Parameters
+    ----------
+    qtrace : fixture
+        Instance of TraceDisplay for application testing
+
+    Expectations
+    ------------
+    All of the table's Item Delegates are what the user expects.
+    """
     curves_model = qtrace.curves_model
     table_view = qtrace.ui.traces_tbl
 
@@ -30,13 +39,13 @@ def test_traces_table_delegates(qtrace: TraceDisplay):
     assert type(table_view.itemDelegateForColumn(delete_col)) is DeleteRowDelegate
 
 
-def test_drag_drop(qtrace: TraceDisplay):
+def test_drag_drop(qtrace):
     pass
 
 
-def test_context_menu(qtrace: TraceDisplay):
+def test_context_menu(qtrace):
     pass
 
 
-def test_formula_dialog(qtrace: TraceDisplay):
+def test_formula_dialog(qtrace):
     pass

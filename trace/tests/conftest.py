@@ -7,12 +7,12 @@ from main import TraceDisplay
 
 @pytest.fixture(scope="session")
 def qapp(qapp_args):
-    """
-    Fixture for a PyDMApplication app instance.
+    """Fixture for a PyDMApplication app instance.
 
     Parameters
     ----------
-    qapp_args: Arguments for the QApp.
+    qapp_args : list
+        Arguments for the QApp.
 
     Yields
     -------
@@ -34,4 +34,9 @@ def qtrace(qapp):
     ------
     An instance of TraceDisplay.
     """
-    yield TraceDisplay()
+    trace = TraceDisplay()
+
+    # updateXAxis would be called on application render; necessary for testing X-Axis
+    trace.ui.main_plot.updateXAxis(True)
+
+    yield trace

@@ -34,7 +34,7 @@ class FileIOMixin:
             self.io_path = file_name.parent
             self.converter.export_file(file_name, self.ui.main_plot)
         except FileNotFoundError as e:
-            logger.error(e)
+            logger.error(str(e))
             self.export_save_file()
 
     def import_save_file(self, file_name: Union[str, Path] = None) -> None:
@@ -60,7 +60,7 @@ class FileIOMixin:
             file_data = self.converter.import_file(file_name)
             self.io_path = file_name.parent
         except FileNotFoundError as e:
-            logger.error(e)
+            logger.error(str(e))
             self.import_save_file()
             return
 
@@ -91,7 +91,7 @@ class FileIOMixin:
             logger.debug(f"Starting time: {start_dt}")
             logger.debug(f"Ending time: {end_dt}")
         except ValueError as e:
-            logger.error(e)
+            logger.error(str(e))
             self.import_save_file()
             return
 
